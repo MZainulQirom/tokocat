@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Loading from "@/app/components/loading/page";
 import Link from "next/link";
-import ProductCard from "@/app/components/ProductCard/page";
+import ProductCard from "@/app/components/ProductCard/ProductCard";
 
 type Product = {
   id: number;

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Navbar from "./components/navbar/page";
+import Navbar from "./components/navbar/Navbar";
 import CTA from "./components/cta/page";
 import Footer from "./components/footer/page";
 import { CartProvider } from "./context/cardContext";
