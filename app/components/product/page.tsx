@@ -38,7 +38,7 @@ console.log(products);
   useEffect(()  => {
     async function fetchData() {
       setLoading(true);
-      const response = await fetch("/api//products?unggulan=true");
+      const response = await fetch("/api/products?unggulan=true");
       const data = await response.json();
       setProducts(data);
     }

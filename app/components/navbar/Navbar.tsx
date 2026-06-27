@@ -38,16 +38,16 @@ const Navbar: React.FC = () => {
             onMouseLeave={() => setIsDropdown(false)}
           >
             {/* <Link  > */}
-            <Link  href="/page/product" className={"hover:text-green-600 text-green-500" + (pathname === "/page/product" ? " font-bold" : "")}>
+            <Link  href="/product" className={"hover:text-green-600 text-green-500" + (pathname === "/product" ? " font-bold" : "")}>
               Produk
             </Link>
           </div>
 
-          <Link href="/page/about" className={"hover:text-green-600 text-green-500" + (pathname === "/page/about" ? " font-bold" : "")}>
+          <Link href="/about" className={"hover:text-green-600 text-green-500" + (pathname === "/about" ? " font-bold" : "")}>
             Tentang
           </Link>
 
-          <Link href="/page/contact" className={"hover:text-green-600 text-green-500" + (pathname === "/page/contact" ? " font-bold" : "")}>
+          <Link href="/contact" className={"hover:text-green-600 text-green-500" + (pathname === "/contact" ? " font-bold" : "")}>
             Kontak
           </Link>
 
