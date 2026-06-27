@@ -162,7 +162,7 @@ const id = Array.isArray(rawId) ? rawId[0] : rawId;
         Rp {Number(product.price).toLocaleString('id-ID')}
         </p>
         <Link
-          href={`/page/checkout?token=${encodeURIComponent(token)}`}
+          href={`/checkout?token=${encodeURIComponent(token)}`}
           className={`bg-green-600 text-white py-2 px-4 rounded-lg ${
             !selectedColor ? "opacity-50 pointer-events-none" : "hover:bg-green-700"
           }`}>

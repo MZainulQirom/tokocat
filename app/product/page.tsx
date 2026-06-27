@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import ProductFilter from "../../components/productFilter/page";
-import ProductCard from "../../components/ProductCard/ProductCard";
-import Loading from "../../components/loading/page";
+import ProductFilter from "../components/productFilter/page";
+import ProductCard from "../components/ProductCard/ProductCard";
+import Loading from "../components/loading/page";
 import {motion}from "framer-motion"; 
 
 
