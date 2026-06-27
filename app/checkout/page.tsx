@@ -1,25 +1,30 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
-
+import { useEffect, useMemo, useState } from "react";
 export default function CheckoutPage() {
   const [data, setData] = useState<{ image?: string, price?: number } | null>(null);
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
-  let dataToken: any = null;
+  // let dataToken: any = null;
 
+  // try {
+  //   if (token) {
+  //     const decoded = decodeURIComponent(token);
+  //     dataToken = JSON.parse(atob(decoded));
+  //   }
+  // } catch (err) {
+  //   console.log("TOKEN ERROR:", err);
+  // }
+  const dataToken = useMemo(() => {
   try {
-    if (token) {
-      const decoded = decodeURIComponent(token);
-      dataToken = JSON.parse(atob(decoded));
-    }
-  } catch (err) {
-    console.log("TOKEN ERROR:", err);
+    if (!token) return null;
+    const decoded = decodeURIComponent(token);
+    return JSON.parse(atob(decoded));
+  } catch {
+    return null;
   }
-  
-
- 
+}, [token])
   const [order, setOrder] = useState({
   name: "",
   phone: "",
@@ -116,7 +121,7 @@ export default function CheckoutPage() {
 
           <div className="flex items-center gap-4 border-b pb-4">
             <img
-              src={data?.image}
+              src={data?.image  || "/placeholder.png"}
               alt="produk"
               className="w-20 h-20 md:w-40 md:h-40 object-contain rounded "
             />
