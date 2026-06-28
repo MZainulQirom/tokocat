@@ -1,22 +1,17 @@
 "use client";
 export const dynamic = "force-dynamic";
 
+import { useParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
-export default function CheckoutPage({
-  params,
-}: {
-  params: { token: string };
-}) {
-  const [data, setData] = useState<{ image?: string; price?: number } | null>(null);
+export default function CheckoutPage() {
+  const params = useParams();
+  const token = params?.token as string;
 
-  // ✅ ambil token dari params (bukan searchParams lagi)
-  const token = params.token;
+  const [data, setData] = useState<{ image?: string; price?: number } | null>(null);
 
   // ✅ decode token
   const dataToken = useMemo(() => {
-    if (typeof window === "undefined") return null;
-
     try {
       if (!token) return null;
       const decoded = decodeURIComponent(token);
@@ -26,7 +21,7 @@ export default function CheckoutPage({
     }
   }, [token]);
 
-  // ✅ state order
+  // ✅ order state (jangan langsung pakai dataToken di awal!)
   const [order, setOrder] = useState({
     name: "",
     phone: "",
@@ -37,26 +32,24 @@ export default function CheckoutPage({
     paymentMethod: "COD",
   });
 
-  // ✅ update order saat token ready
+  // ✅ sync dataToken ke state
   useEffect(() => {
-    if (!dataToken) return;
-
-    setOrder((prev) => ({
-      ...prev,
-      quantity: dataToken.qty || 1,
-      color: dataToken.color || "",
-    }));
+    if (dataToken) {
+      setOrder((prev) => ({
+        ...prev,
+        quantity: dataToken.qty || 1,
+        color: dataToken.color || "",
+      }));
+    }
   }, [dataToken]);
 
-  // ✅ ambil data produk
+  // ✅ fetch product
   useEffect(() => {
     if (!dataToken?.id) return;
 
     fetch(`/api/detail/${dataToken.id}`)
       .then((res) => res.json())
-      .then((res) => {
-        setData(res);
-      });
+      .then((res) => setData(res));
   }, [dataToken]);
 
   const price = data?.price || 0;
@@ -94,7 +87,7 @@ export default function CheckoutPage({
       ...order,
     };
 
-    const res = await fetch("/api/checkout", {
+    await fetch("/api/checkout", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -102,18 +95,18 @@ export default function CheckoutPage({
       body: JSON.stringify(payload),
     });
 
-    await res.json();
-
     if (order.paymentMethod === "Transfer Bank") {
       setShowPayment(true);
     } else {
-      alert("Pesanan berhasil dibuat! Siapkan uang saat barang datang.");
+      alert("Pesanan berhasil! Siapkan pembayaran COD.");
     }
   };
 
   return (
     <div className="min-h-screen bg-green-50 p-4 md:p-10 text-gray-600 mt-20">
       <div className="max-w-5xl mx-auto bg-white rounded-xl shadow-md p-6 grid md:grid-cols-2 gap-6">
+        
+        
 
         {/* 📦 RINGKASAN */}
         <div>
@@ -121,29 +114,37 @@ export default function CheckoutPage({
 
           <div className="flex items-center gap-4 border-b pb-4">
             <img
-              src={data?.image || "/placeholder.png"}
-              className="w-20 h-20 md:w-40 md:h-40 object-contain rounded"
+              src={data?.image  || "/placeholder.png"}
+              alt="produk"
+              className="w-20 h-20 md:w-40 md:h-40 object-contain rounded "
             />
 
             <div>
-              <h3 className="font-semibold">Produk</h3>
-              <p className="text-sm text-gray-500">Warna: {order.color}</p>
+              <h3 className="font-semibold">Jotun Majestic</h3>
+              <p className="text-sm text-gray-500">Warna: {dataToken?.color}</p>
+              <p className="text-lg font-bold text-right text-green-600 w-full">Rp {price.toLocaleString("id-ID")}</p>
 
-              <p className="text-lg font-bold text-green-600">
-                Rp {price.toLocaleString("id-ID")}
-              </p>
-
-              {/* qty */}
+              {/* JUMLAH */}
               <div className="flex items-center mt-2">
-                <button onClick={() => updateQty(Math.max(1, order.quantity - 1))}>-</button>
+                <button
+                  onClick={() => updateQty(order.quantity > 1 ? order.quantity - 1 : 1)}
+                  className="px-2 border"
+                >
+                  -
+                </button>
                 <span className="px-4">{order.quantity}</span>
-                <button onClick={() => updateQty(order.quantity + 1)}>+</button>
+                <button
+                  onClick={() => updateQty(order.quantity + 1)}
+                  className="px-2 border"
+                >
+                  +
+                </button>
               </div>
             </div>
           </div>
 
-          {/* harga */}
-          <div className="mt-4 space-y-2">
+          {/* HARGA */}
+          <div className="mt-4 space-y-2 text-sm">
             <div className="flex justify-between">
               <span>Subtotal</span>
               <span>Rp {subtotal.toLocaleString("id-ID")}</span>
@@ -154,38 +155,126 @@ export default function CheckoutPage({
               <span>Rp {ongkir.toLocaleString("id-ID")}</span>
             </div>
 
-            <div className="flex justify-between font-bold">
+            <div className="flex justify-between font-semibold text-lg">
               <span>Total</span>
               <span>Rp {total.toLocaleString("id-ID")}</span>
             </div>
           </div>
-        </div>
 
-        {/* 📍 FORM */}
-        <div>
-          <h2 className="text-xl font-semibold mb-4">Alamat</h2>
+          {/* 💳 PEMBAYARAN */}
+          <div className="mt-6">
+            <h3 className="font-semibold mb-2">Metode Pembayaran</h3>
 
-          <input name="name" value={order.name} onChange={handleChange} placeholder="Nama" className="input"/>
-          <input name="phone" value={order.phone} onChange={handleChange} placeholder="No HP" className="input"/>
-          <textarea name="address" value={order.address} onChange={handleChange} className="input"/>
-          <input name="city" value={order.city} onChange={handleChange} className="input"/>
-        </div>
-      </div>
-
-      {showAlert && <p className="text-red-500 text-center">Isi semua data!</p>}
-
-      <button onClick={handleOrder} className="btn">
-        Buat Pesanan
-      </button>
-
-      {showPayment && (
-        <div className="fixed inset-0 bg-black/50 flex justify-center items-center">
-          <div className="bg-white p-6 rounded">
-            <h2>Transfer Bank</h2>
-            <p>Total: Rp {total.toLocaleString("id-ID")}</p>
+            <div className="space-y-2">
+              {["COD", "Transfer Bank"].map((method) => (
+                <label
+                  key={method}
+                  className="flex items-center gap-2 border p-2 rounded cursor-pointer"
+                >
+                  <input
+                    type="radio"
+                    checked={order.paymentMethod === method}
+                    onChange={() => setOrder((prev) => ({ ...prev, paymentMethod: method }))}
+                  />
+                  {method}
+                </label>
+              ))}
+            </div>
           </div>
         </div>
-      )}
+        {/* 📍 FORM ALAMAT */}
+        <div>
+          <h2 className="text-xl font-semibold mb-4">Alamat Pengiriman</h2>
+
+          <input
+            type="text"
+            name="name"
+            value={order.name}
+            onChange={handleChange}
+            placeholder="Nama Lengkap"
+            className="w-full border p-2 rounded mb-3"
+          />
+
+          <input
+            type="text"
+            name="phone"
+            value={order.phone}
+            onChange={handleChange}
+            placeholder="No HP"
+            className="w-full border p-2 rounded mb-3"
+          />
+
+          <textarea
+            name="address"
+            value={order.address}
+            onChange={handleChange}
+            placeholder="Alamat Lengkap"
+            className="w-full border p-2 rounded mb-3"
+            rows={3}
+          />
+
+          <input
+            type="text"
+            name="city"
+            value={order.city}
+            onChange={handleChange}
+            placeholder="Kota / Kecamatan"
+            className="w-full border p-2 rounded"
+          />
+        </div>
+      </div>
+         {/* BUTTON */}
+         {showAlert && (
+         <p className="text-center text-sm italic text-red-500 ">Mohon Lengkapi data anda !!</p>
+          )}
+          <button 
+          className="mt-6 md:w-1/2 w-full md:mx-auto grid bg-green-600 text-white py-3 rounded-lg hover:bg-green-700"
+          onClick={handleOrder}
+          >
+            Buat Pesanan
+          </button>
+          {showPayment && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+              <div className="bg-white p-6 rounded-xl w-[90%] max-w-md text-center">
+
+                <h2 className="text-xl font-bold mb-4">Pembayaran Transfer</h2>
+
+                <p className="mb-2">Silakan transfer ke:</p>
+
+                <div className="bg-gray-100 p-3 rounded mb-4">
+                  <p className="font-semibold">BCA</p>
+                  <p className="text-lg font-bold">1234567890</p>
+                  <p className="text-sm">a.n Toko Cat</p>
+                </div>
+
+                <p className="mb-2">Total Pembayaran:</p>
+                <p className="text-2xl font-bold text-green-600 mb-4">
+                  Rp {total.toLocaleString("id-ID")}
+                </p>
+
+                <p className="text-sm text-gray-500 mb-4">
+                  *Pastikan transfer sesuai hingga 3 digit terakhir
+                </p>
+
+                <button
+                  onClick={() => {
+                    alert("Terima kasih telah melakukan pembayaran! Pesanan Anda akan segera kami proses.")
+                  }}
+                  className="w-full bg-green-600 text-white py-2 rounded mb-2"
+                >
+                  Saya Sudah Bayar
+                </button>
+
+                <button
+                  onClick={() => setShowPayment(false)}
+                  className="text-sm text-gray-500"
+                >
+                  Tutup
+                </button>
+
+              </div>
+            </div>
+          )}
     </div>
   );
 }
