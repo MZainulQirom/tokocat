@@ -1,4 +1,5 @@
 "use client";
+export const dynamic = "force-dynamic";
 
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -6,17 +7,9 @@ export default function CheckoutPage() {
   const [data, setData] = useState<{ image?: string, price?: number } | null>(null);
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
-  // let dataToken: any = null;
 
-  // try {
-  //   if (token) {
-  //     const decoded = decodeURIComponent(token);
-  //     dataToken = JSON.parse(atob(decoded));
-  //   }
-  // } catch (err) {
-  //   console.log("TOKEN ERROR:", err);
-  // }
   const dataToken = useMemo(() => {
+    if (typeof window === "undefined") return null;
   try {
     if (!token) return null;
     const decoded = decodeURIComponent(token);
@@ -51,7 +44,7 @@ export default function CheckoutPage() {
       // console.log(data);
       setData(data);
     });
-}, [dataToken.id]);
+}, [dataToken]);
   const updateQty =(newQty: number) => {  
     setOrder((prev) => ({
       ...prev,
